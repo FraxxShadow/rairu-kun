@@ -2,7 +2,7 @@ FROM debian
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install dependencies (SSH, curl, Node.js for Localtunnel)
+# Install dependencies
 RUN apt update && apt upgrade -y && apt install -y \
     ssh wget curl unzip vim python3 \
     && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
@@ -19,11 +19,5 @@ RUN mkdir /run/sshd \
 # Expose necessary ports
 EXPOSE 22
 
-# Setup the entrypoint script to run both SSH and Localtunnel
-RUN echo '#!/bin/bash \n\
-    /usr/sbin/sshd -D & \n\
-    lt --port 22 --subdomain my-unique-subdomain' > /entrypoint.sh \
-    && chmod +x /entrypoint.sh
-
-# Run the entrypoint script
-CMD ["/entrypoint.sh"]
+# Run SSH and Localtunnel to expose the SSH port to the outside world
+CMD /usr/sbin/sshd -D & lt --port 22 --subdomain my-unique-subdomain

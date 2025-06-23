@@ -19,5 +19,11 @@ RUN mkdir /run/sshd \
 # Expose necessary ports
 EXPOSE 22
 
-# Run SSH and Localtunnel to expose the SSH port to the outside world
-CMD /usr/sbin/sshd -D & lt --port 22 --subdomain my-unique-subdomain
+# Setup the entrypoint script to run both SSH and Localtunnel
+RUN echo '#!/bin/bash \n\
+    /usr/sbin/sshd -D & \n\
+    lt --port 22 --subdomain my-unique-subdomain' > /entrypoint.sh \
+    && chmod +x /entrypoint.sh
+
+# Run the entrypoint script
+CMD ["/entrypoint.sh"]

@@ -2,7 +2,7 @@ FROM debian
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install dependencies (SSH, curl, Tailscale)
+# Install dependencies (SSH, curl, Tailscale, etc.)
 RUN apt update && apt upgrade -y && apt install -y \
     ssh wget curl unzip vim python3 \
     && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
@@ -17,5 +17,19 @@ RUN mkdir /run/sshd \
 # Expose necessary ports
 EXPOSE 22
 
-# Start SSH and Tailscale to expose SSH securely via private network
-CMD /usr/sbin/sshd -D & tailscale up --authkey tskey-auth-kuhrouL5b511CNTRL-7H2iAEgaizWu6QoWcUc31Xpy9hWJKhgQA --hostname "my-unique-vps"
+# Script to start sshd and tailscaled
+RUN echo '#!/bin/bash\n\
+# Start Tailscale\n\
+tailscaled &\n\
+# Wait for tailscaled to initialize\n\
+sleep 5\n\
+# Bring up Tailscale\n\
+tailscale up --authkey tskey-auth-kuhrouL5b511CNTRL-7H2iAEgaizWu6QoWcUc31Xpy9hWJKhgQA --hostname "my-unique-vps"\n\
+# Start SSH\n\
+/usr/sbin/sshd -D' > /start.sh
+
+# Make the script executable
+RUN chmod +x /start.sh
+
+# Default command to start everything
+CMD ["/start.sh"]

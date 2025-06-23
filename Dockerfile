@@ -1,19 +1,23 @@
 FROM debian
 
-ARG REGION=ap
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install SSH and dependencies
+# Install dependencies (SSH, curl, Node.js for Localtunnel)
 RUN apt update && apt upgrade -y && apt install -y \
-    ssh wget unzip vim curl python3
+    ssh wget curl unzip vim python3 \
+    && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
+    && apt install -y nodejs
+
+# Install Localtunnel globally
+RUN npm install -g localtunnel
 
 # Setup SSH (allow root login and set the password)
 RUN mkdir /run/sshd \
     && echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config \
     && echo root:dark | chpasswd
 
-# Expose necessary ports (e.g., SSH on port 22)
+# Expose necessary ports
 EXPOSE 22
 
-# Start SSH and tunnel via Serveo
-CMD /usr/sbin/sshd -D & ssh -R 80:localhost:22 serveo.net
+# Run SSH and Localtunnel to expose the SSH port to the outside world
+CMD /usr/sbin/sshd -D & lt --port 22 --subdomain my-unique-subdomain

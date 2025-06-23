@@ -10,7 +10,7 @@ RUN apt update && apt upgrade -y && apt install -y \
 # Setup SSH (allow root login and set the password)
 RUN mkdir /run/sshd \
     && echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config \
-    && echo root:craxid | chpasswd
+    && echo root:dark | chpasswd
 
 # Expose necessary ports (e.g., SSH on port 22)
 EXPOSE 22
